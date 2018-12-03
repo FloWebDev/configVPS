@@ -7,7 +7,6 @@
 * Sécruriser le VPS
 * Installer LAMP sur Ubuntu
 * Installer phpMyAdmin
-* Résoudre les problèmes d'incompatibilité entre phpMyAdmin et PHP 7.2
 * Créer un Virtual Host
 * Rediriger un nom de domaine vers le VPS
 * Redirecton 301 de http://www.example.com vers http://example.com
@@ -17,8 +16,8 @@
 
 ## Pré-requis
 
-* Avoir un VPS chez OVH (l'installation et la configuration diffèrera peu selon les prestataires).
-* Avoir installé la distribution Ubuntu 18.04 Server (version 64 bits) sur son VPS.
+* VPS chez OVH (l'installation et la configuration diffèrere peu selon les prestataires).
+* Installation la distribution Ubuntu 18.04 Server (version 64 bits) sur son VPS.
 
 ## Se connecter au VPS
 
@@ -87,6 +86,8 @@ La procédure n'est pas indiquée dans cette fiche.
 
 ## Installer LAMP sur Ubuntu
 
+LAMP = Linux - Apache - MySQL - PHP
+
 **Toutes les opérations qui suivent doivent être effectuées avec les droits root**
 
 Installer les paquets nécessaires pour Apache, PHP et MySQL :
@@ -96,6 +97,12 @@ La plupart des scripts PHP (CMS, forums, applications web en tout genre) utilise
 * `apt install php-curl php-gd php-intl php-json php-mbstring php-xml php-zip`
 
 *N.B. Sans précision de version, c'est actuellement PHP 7.2 qui est installé par défaut.*
+
+Une fois les paquets installés, ouvrez un des liens suivants dans votre navigateur :
+* http://127.0.0.1/
+* http://localhost
+
+Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It works!** s'affiche si votre serveur LAMP est correctement installé.
 
 ### Configuration par défaut du serveur Apache
 
@@ -109,6 +116,12 @@ La plupart des scripts PHP (CMS, forums, applications web en tout genre) utilise
 	Require all granted
 </Directory>
 ```
+| First Header | Second Header|
+| - | - |
+| Options +FollowSymLinks | Apache suivra les liens symboliques qu'il trouvera dans ce répertoire (et ses descendants). |
+| AllowOverride all | Apache suivra les liens symboliques qu'il trouvera dans ce répertoire (et ses descendants). |
+| Require all granted | OTous les visiteurs pourront accéder au contenu de ce répertoire. Pour des raisons de sécurité ou de privacité on peut par exemple limiter l'accès au serveur à seulement une ou certaines adresses IP avec une directive du type `Require ip 192.168.1.10.`  |
+
 
 On obtient donc la configuration de base suivante pour le fichier 000-default.conf :
 ```
@@ -141,14 +154,59 @@ Activer le module PHP 7.2
 
 N.B. Pour lister les modules d'Apache chargés : `apache2ctl -M`
 
+### Modification des propriétaires du dossier www/html
+
+Commande à taper en tant que root : `chown -R nouveauUtilisateur:www-data /var/www/html`
+Cette étape permettra de donner les droits sur le dossier www/html au nouvel utilisateur (créé avec la commande `adduser`) et au groupe du serveur Apache (www-data).
+
+Cette étape est nécessaire afin de pouvoir par la suite téléverser des fichiers dans le dossier **www/html** en tant que `nouveauUtilisateur` (le user créé précedemment dans l'accès SSH) et non pas seulement avec `root` dont nous avons bloqué l'accès direct.
+
 ## Installer phpMyAdmin
+
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
 
 Installer phpMyAdmin :
 * `apt install phpmyadmin`
+* Lors de l'installation, il vous sera posé quelques questions auxquelles il faut répondre :
+** Créer la base de données phpMyAdmin : **oui** (sauf si vous voulez procéder à cette configuration vous-même). 
+** Définir un mot de passe pour l'utilisateur MySQL phpmyadmin : Vous pouvez laisser le champ vide et valider **OK**. Cela aura pour effet de générer un mot de passe aléatoire. Etant donné que nous n'avons pas besoin de connaître le mot de passe de connexion pour l'utilisateur phpmyadmin, cela n'est pas gênant.
+** Choisir le serveur web à configurer automatiquement : Appuyer sur la touche Espace pour vérifier qu'une étoile est bien positionné entre les crochets associés à **apache2**, et valider **OK**. Sinon modifier la sélection pour **apache2** et valider **OK**.
+
+## Créer un VirtualHost (ou Hôte Virtuel)
 
 
 
 ## Annexes
+
+### Erreur : phpMyAdmin non accessible
+
+Bien vérifier que phpMyAdmin est installé:
+
+Entrer la commande suivante : whereis phpmyadmin.
+
+Si le terminal retourne :
+> phpmyadmin: /etc/phpmyadmin /usr/share/phpmyadmin
+c'est que phpMyAdmin est bien installé.
+
+Dans le cas contraire, s'assurer auparavant que, lors de l'installation du paquet phpmyadmin, le serveur web souhaité (généralement Apache) a bien été sélectionné.
+Taper la commande suivante pour reconfigurer phpmyadmin :
+* `dpkg-reconfigure phpmyadmin` (toujours avec les droits root)
+L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut appuyer sur la barre d'espace et s'assurer d'avoir une astérisque * au niveau d'Apache.
+
+## Erreur : phpMyAdmin affiche “Warning in ./libraries/sql.lib.php#613 count(): Parameter must be an array or an object that implements Countable”
+
+* Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/sql.lib.php /usr/share/phpmyadmin/libraries/sql.lib.php.bak`
+* Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/sql.lib.php`
+* Rechercher la ligne `count($analyzed_sql_results['select_expr'] == 1)` et la remplacer par `((count($analyzed_sql_results['select_expr']) == 1)`
+* Enregistrer et quitter
+
+## Erreur : phpMyAdmin affiche “Warning in ./libraries/plugin_interface.lib.php#551”
+
+* Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/plugin_interface.lib.php /usr/share/phpmyadmin/libraries/plugin_interface.lib.php.bak`
+* Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/plugin_interface.lib.php`
+* Rechercher la ligne `if (! is_null($options) && count($options) > 0) {` ou `if ($options != null && count($options) > 0) {` et la remplacer par `if (!empty($options)) {`
+* Enregistrer et quitter
+
 
 ### Erreur : @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!  @
 
