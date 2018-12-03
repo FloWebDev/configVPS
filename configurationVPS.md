@@ -272,12 +272,12 @@ Pour la génération et la gestion des certificats, Let's Encrypt recommande l'u
 Vérifier que le serveur Apache soit fontionnel avec les modules SSL et Rewrite.
 
 Pour voir les modules chargés :
-`apache2ctl -M`
+* `apache2ctl -M`
 
 Si besoin, activer les modules :
-`a2enmod rewrite`
-`a2enmod ssl`
-Puis, relancer le serveur Apache : `systemctl reload apache2`
+* `a2enmod rewrite`
+* `a2enmod ssl`
+* Puis, relancer le serveur Apache : `systemctl reload apache2`
 
 ## Installer Certbot
 
@@ -463,23 +463,3 @@ Résoudre le duplicate content (avec et sans www) : https://www.webrankinfo.com/
 Let's Encrypt : https://letsencrypt.org/
 Certbot Apache on Ubuntu 18.04 LTS (bionic) : https://certbot.eff.org/lets-encrypt/ubuntubionic-apache
 User Guide Certbot : https://certbot.eff.org/docs/using.html
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
