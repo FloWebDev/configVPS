@@ -15,8 +15,8 @@
 
 ## Pré-requis
 
-* VPS chez OVH (l'installation et la configuration diffèrere peu selon les prestataires).
-* Installation la distribution Ubuntu 18.04 Server (version 64 bits) sur son VPS.
+* VPS chez OVH (l'installation et la configuration diffère peu selon les prestataires).
+* Installation de la distribution Ubuntu 18.04 Server (version 64 bits) sur son VPS.
 
 ## Se connecter au VPS
 
