@@ -172,6 +172,21 @@ Installer phpMyAdmin :
 ** Définir un mot de passe pour l'utilisateur MySQL phpmyadmin : Vous pouvez laisser le champ vide et valider **OK**. Cela aura pour effet de générer un mot de passe aléatoire. Etant donné que nous n'avons pas besoin de connaître le mot de passe de connexion pour l'utilisateur phpmyadmin, cela n'est pas gênant.
 ** Choisir le serveur web à configurer automatiquement : Appuyer sur la touche Espace pour vérifier qu'une étoile est bien positionné entre les crochets associés à **apache2**, et valider **OK**. Sinon modifier la sélection pour **apache2** et valider **OK**.
 
+### Accès root
+
+Avec MySQL depuis Bionic 18.04, et MariaDB depuis Xenial 16.04, l'authentification de l'utilisateur root de MySQL se fait au moyen du plugin auth_socket, donc avec sudo.
+Cette méthode ne permet pas de se connecter avec phpMyAdmin, mais il est vivement déconseillé de modifier ce comportement.
+
+Si vous avez besoin d'un accès global à vos bases de données depuis un même compte, la solution conseillée est donc de créer un nouvel utilisateur et de lui attribuer tous les privilèges :
+* `mysql` (avec des droits root)
+
+Puis dans la console MySQL :
+```
+GRANT ALL ON *.* TO 'nom_utilisateur_choisi'@'localhost' IDENTIFIED BY 'mot_de_passe_solide' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+QUIT;
+```
+
 ## Faire pointer un nom de domaine vers le VPS
 
 La procédure exacte dffière selon les registrars, mais de manière générale il est conseillé :
@@ -404,12 +419,16 @@ L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut 
 
 ## Erreur : phpMyAdmin affiche “Warning in ./libraries/sql.lib.php#613 count(): Parameter must be an array or an object that implements Countable”
 
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+
 * Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/sql.lib.php /usr/share/phpmyadmin/libraries/sql.lib.php.bak`
 * Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/sql.lib.php`
 * Rechercher la ligne `count($analyzed_sql_results['select_expr'] == 1)` et la remplacer par `((count($analyzed_sql_results['select_expr']) == 1)`
 * Enregistrer et quitter
 
 ## Erreur : phpMyAdmin affiche “Warning in ./libraries/plugin_interface.lib.php#551”
+
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
 
 * Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/plugin_interface.lib.php /usr/share/phpmyadmin/libraries/plugin_interface.lib.php.bak`
 * Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/plugin_interface.lib.php`
