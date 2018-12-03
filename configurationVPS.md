@@ -7,8 +7,8 @@
 * Sécruriser le VPS
 * Installer LAMP sur Ubuntu
 * Installer phpMyAdmin
+* Faire pointer un nom de domaine vers le VPS
 * Créer un Virtual Host
-* Rediriger un nom de domaine vers le VPS
 * Redirecton 301 de http://www.example.com vers http://example.com
 * Activer le HTTPS sur son site Internet avec Let's Encrypt
 * Annexes
@@ -173,6 +173,15 @@ Installer phpMyAdmin :
 ** Définir un mot de passe pour l'utilisateur MySQL phpmyadmin : Vous pouvez laisser le champ vide et valider **OK**. Cela aura pour effet de générer un mot de passe aléatoire. Etant donné que nous n'avons pas besoin de connaître le mot de passe de connexion pour l'utilisateur phpmyadmin, cela n'est pas gênant.
 ** Choisir le serveur web à configurer automatiquement : Appuyer sur la touche Espace pour vérifier qu'une étoile est bien positionné entre les crochets associés à **apache2**, et valider **OK**. Sinon modifier la sélection pour **apache2** et valider **OK**.
 
+## Faire pointer un nom de domaine vers le VPS
+
+La procédure exacte dffière selon les registrars, mais de manière générale il est conseillé :
+1. Laisser les paramètres DNS par défaut associé au nom de domaine par votre Registrar.
+2. Modifier l'enregistrement DNS de type **A** de votre domaine **example.com** pour y ajouter l'adresse IP du VPS. L’enregistrement DNS de type A permet de relier un nom d’hôte (domaine ou sous-domaine) à l’adresse IP d’un serveur.
+3. Si ce n'est pas déjà fait automatiquement par le Registrar, créer le sous-domaine www.example.com. Puis modifier l'enregistrement DNS de type **CNAME** de ce sous-domaine pour y ajouter la valeur **example.com**. L’enregistrement DNS de type CNAME vous permet de relier un nom d’hôte vers l’enregistrement DNS d’un autre nom d’hôte, sur le principe de l’alias.
+
+Pour vérifier la propagation des DNS : https://www.whatsmydns.net/ (généralement entre quelques minutes à 24h max).
+
 ## Créer un VirtualHost (ou Hôte Virtuel)
 
 **Toutes les opérations qui suivent doivent être effectuées avec les droits root**
@@ -200,11 +209,180 @@ Copier dans le fichier créé les lignes suivantes :
 | ServerAlias www.example.com | L'hôte sera aussi appelé pour le sous-domaine www.example.com. On peut aussi utiliser *.example.com pour inclure tous les sous-domaines. |
 | ErrorLog /var/log/apache2/error.example.com.log **et** CustomLog /var/log/apache2/access.example.com.log combined | Il est pratique d'avoir des logs séparés pour chaque hôte virtuel, afin de ne pas mélanger toutes les informations. |
 
-il faut ensuite activer cette configuration avec la commande `a2ensite [nom du fichier]`, puis relancer le serveur Apache pour que la configuration soit prise en compte avec la commande `systemctl reload apache2`.
+Enregistrer puis fermer le fichier.
+
+Il faut ensuite activer cette configuration avec la commande `a2ensite [nom du fichier]`, puis relancer le serveur Apache pour que la configuration soit prise en compte avec la commande `systemctl reload apache2`.
 
 Le fichier sera alors visible dans **/etc/apache2/sites-enabled/**.
 
+Taper dans votre navigateur `http://example.com` pour vérifier la bonne configuration de votre VH.
+
 *N.B. Pour désactiver un fichier de configuration VH, il faut utiliser la commande `a2dissite [nom du fichier]`, puis relancer le serveur Apache `systemctl reload apache2`. Le fichier ne sera alors plus présent dans **/etc/apache2/sites-enabled/** mais toujours dans **/etc/apache2/sites-available/**.*
+
+Pour la redirection 301 du sous-domaine www.example.com vers le domaine example.com, ajouter ces lignes dans le fichier de configuration du VH :
+```
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !^example.com [NC]
+RewriteRule (.*) http://example.com/$1 [QSA,R=301,L]
+```
+Nous obtenons donc un fichier de configuration complet du VH :
+```
+<VirtualHost *:80>
+        ServerName example.com
+        ServerAlias www.example.com
+        DocumentRoot "/var/www/html/votreChemin"
+
+        RewriteEngine On
+        RewriteCond %{HTTP_HOST} !^example.com [NC]
+        RewriteRule (.*) http://example.com/$1 [QSA,R=301,L]
+
+        <Directory "/var/www/html/votreChemin">
+                Options +FollowSymLinks
+                AllowOverride all
+                Require all granted
+        </Directory>
+        ErrorLog /var/log/apache2/error.example.com.log
+        CustomLog /var/log/apache2/access.example.com.log combined
+</VirtualHost>
+```
+
+## Activer le HTTPS sur son site Internet avec Let's Encrypt
+
+Let’s Encrypt est une autorité de certification gratuite, automatisée et ouverte.
+Pour la génération et la gestion des certificats, Let's Encrypt recommande l'utilisation du client ACME **Certbot**.
+
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+
+### Pré-requis
+
+Vérifier que le serveur Apache soit fontionnel avec les modules SSL et Rewrite.
+
+Pour voir les modules chargés :
+`apache2ctl -M`
+
+Si besoin, activer les modules :
+`a2enmod rewrite`
+`a2enmod ssl`
+Puis, relancer le serveur Apache : `systemctl reload apache2`
+
+## Installer Certbot
+
+Taper les lignes de commandes qui suivent une à une :
+```
+apt-get update
+apt-get install software-properties-common
+add-apt-repository universe
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-apache 
+```
+### Générer des certificats Let's Encrypt
+
+Il existe plusieurs manières de générer des certificats Let's Encrypt.
+L'exécution de la commande `certbot --apache` permet d'obtenir un certificat et autorise Certbot à modifier automatiquement la configuration Apache configurer les certificats.
+
+Une fois la commade `certbot --apache` lancée, suivre les différentes instructions à l'écran, et notamment :
+* Saisir une adresse e-mail valide.
+* Sélectionner les domaines et sous-domaines pour lesquels générer un certificat.
+* Choisir l'option accès HTTPS :
+	* [1] Easy - Permet l'accès à HTTP et HTTPS
+	* [2] Secure - Redirige toutes les réquêtes vers l'accès HTTPS sécurisé [à privilégier surtout si le site est nouvueau]
+* Les certificats générés sont stockés dans le dossier **/etc/letsencrypt/live/CERTNAME/**
+
+A ce niveau là, nous constatons que Certbot a procédé aux configurations suivantes (celles-ci peuvent varier suivant la configuration demandée) dans le dossier **/etc/apache2/sites-available/** :
+* Edition du fichier VH example.com.conf en ajoutant à la fin du fichier les lignes suivantes pour forcer la redirection de tous les domaines et sous-domaines vers le HTTPS :
+```
+RewriteCond %{SERVER_NAME} =example.com [OR]
+RewriteCond %{SERVER_NAME} =www.example.com
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+```
+Le fichier example.com.conf entier est donc :
+```
+<VirtualHost *:80>
+        ServerName example.com
+        ServerAlias www.example.com
+        DocumentRoot "/var/www/html/votreChemin"
+
+        RewriteEngine On
+        RewriteCond %{HTTP_HOST} !^example.com [NC]
+        RewriteRule (.*) http://example.com/$1 [QSA,R=301,L]
+
+        <Directory "/var/www/html/votreChemin">
+                Options +FollowSymLinks
+                AllowOverride all
+                Require all granted
+        </Directory>
+        ErrorLog /var/log/apache2/error.example.com.log
+        CustomLog /var/log/apache2/access.example.com.log combined
+RewriteCond %{SERVER_NAME} =example.com [OR]
+RewriteCond %{SERVER_NAME} =www.example.com
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+</VirtualHost>
+```
+* Création d'un fichier **example.com-le-ssl.conf** :
+```
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+        ServerName example.com
+        ServerAlias www.example.com
+        DocumentRoot "/var/www/html/votreChemin"
+
+        RewriteEngine On
+        RewriteCond %{HTTP_HOST} !^example.com [NC]
+        RewriteRule (.*) http://example.com/$1 [QSA,R=301,L]
+
+        <Directory "/var/www/html/votreChemin">
+                Options +FollowSymLinks
+                AllowOverride all
+                Require all granted
+        </Directory>
+        ErrorLog /var/log/apache2/error.example.com.log
+        CustomLog /var/log/apache2/access.example.com.log combined
+
+Include /etc/letsencrypt/options-ssl-apache.conf
+SSLCertificateFile /etc/letsencrypt/live/example.com/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/example.com/privkey.pem
+</VirtualHost>
+</IfModule>
+```
+Ce dernier apparait déjà comme activé dans le dossier **/etc/apache2/sites-enabled/**.
+
+### Renouvellement des certificats
+
+Les certificats Let's Encrypt ont une validité de 90 jours.
+Pour renouveller les certificats, utiliser cette commande :
+* `certbot renew`
+Cette commande tente de renouveler tous les certificats précédemment obtenus expirant dans moins de 30 jours. 
+
+Il est possible d'automatiser le renouvellement automatique des certificats via le **crontab** (= table de planification).
+Cette fiche n'explique pas cette procédure.
+Il est alors possible de tester le renouvellement automatique des certificats avec la commande suivante :
+* ``certbot renew --dry-run``
+
+### Révocation et suppression des certificats
+
+Pour révoquer des certificats :
+* `certbot revoke --cert-path /etc/letsencrypt/live/CERTNAME/cert.pem`
+
+On peut également spécifier le motif de révocation dcertifu icat à l'aide de l'argument **--reason**. Les différents motifscomprennent **unspecified** (la valeur par défaut), ainsi que **keycompromise**, **affiliationchanged**, **superseded**, and **cessationofoperation** :
+`certbot revoke --cert-path /etc/letsencrypt/live/CERTNAME/cert.pem --reason keycompromise`
+
+
+Une fois qu'un certificat est révoqué, tous les fichiers d'un certificat peuvent être supprimés du système à l'aide de la commande `delete` :
+`certbot delete --cert-name example.com`
+
+Ensuite, penser à :
+1. Taper la commande `a2dissite example.com-le-ssl.conf`
+2. Dans */etc/apache2/sites-available*, supprimer le fichier de configuration associé : `rm example-le-ssl.conf`
+3. Supprimer les lignes ajoutées par certbot dans le fichier de **config example.com.conf**. Par exemple à la fin du fichier example.com.conf :
+```
+RewriteCond %{SERVER_NAME} =example.com [OR]
+RewriteCond %{SERVER_NAME} =www.example.com
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+```
+4. Relancer Apache : `systemctl restart apache2`
+5. Si aucune différence sur la navigateur, fermer le navigateur et supprimer le cache et les cookies.
+
 
 ## Annexes
 
@@ -215,7 +393,7 @@ Bien vérifier que phpMyAdmin est installé:
 Entrer la commande suivante : whereis phpmyadmin.
 
 Si le terminal retourne :
-> phpmyadmin: /etc/phpmyadmin /usr/share/phpmyadmin
+* `phpmyadmin: /etc/phpmyadmin /usr/share/phpmyadmin`
 c'est que phpMyAdmin est bien installé.
 
 Dans le cas contraire, s'assurer auparavant que, lors de l'installation du paquet phpmyadmin, le serveur web souhaité (généralement Apache) a bien été sélectionné.
