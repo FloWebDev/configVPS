@@ -116,7 +116,7 @@ Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It wor
 	Require all granted
 </Directory>
 ```
-| First Header | Second Header|
+| Directive | Description |
 | - | - |
 | Options +FollowSymLinks | Apache suivra les liens symboliques qu'il trouvera dans ce répertoire (et ses descendants). |
 | AllowOverride all | Apache suivra les liens symboliques qu'il trouvera dans ce répertoire (et ses descendants). |
@@ -137,6 +137,7 @@ On obtient donc la configuration de base suivante pour le fichier 000-default.co
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ```
+
 ### Activer des modules complémentaires sur Apache
 
 Activer le module "rewrite" (permet de réécrire des URL) :
@@ -174,7 +175,36 @@ Installer phpMyAdmin :
 
 ## Créer un VirtualHost (ou Hôte Virtuel)
 
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
 
+Créer un fichier de configuration dans lequel est défini un hôte virtuel pour chaque site ou application web dans le répertoire **/etc/apache2/sites-available/** :
+`nano /etc/apache2/sites-available/example.com.conf`
+
+Copier dans le fichier créé les lignes suivantes :
+```
+<VirtualHost *:80>
+	ServerName example.com
+	ServerAlias www.example.com
+	DocumentRoot "/var/www/html/votreChemin"
+	<Directory "/var/www/html/votreChemin">
+		Options +FollowSymLinks
+		AllowOverride all
+		Require all granted
+	</Directory>
+	ErrorLog /var/log/apache2/error.example.com.log
+	CustomLog /var/log/apache2/access.example.com.log combined
+</VirtualHost>
+```
+| Directive | Description |
+| - | - |
+| ServerAlias www.example.com | L'hôte sera aussi appelé pour le sous-domaine www.example.com. On peut aussi utiliser *.example.com pour inclure tous les sous-domaines. |
+| ErrorLog /var/log/apache2/error.example.com.log **et** CustomLog /var/log/apache2/access.example.com.log combined | Il est pratique d'avoir des logs séparés pour chaque hôte virtuel, afin de ne pas mélanger toutes les informations. |
+
+il faut ensuite activer cette configuration avec la commande `a2ensite [nom du fichier]`, puis relancer le serveur Apache pour que la configuration soit prise en compte avec la commande `systemctl reload apache2`.
+
+Le fichier sera alors visible dans **/etc/apache2/sites-enabled/**.
+
+*N.B. Pour désactiver un fichier de configuration VH, il faut utiliser la commande `a2dissite [nom du fichier]`, puis relancer le serveur Apache `systemctl reload apache2`. Le fichier ne sera alors plus présent dans **/etc/apache2/sites-enabled/** mais toujours dans **/etc/apache2/sites-available/**.*
 
 ## Annexes
 
@@ -210,7 +240,7 @@ L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut 
 
 ### Erreur : @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!  @
 
-Suite à la réinstallation de votre VPS, vous pouvez rencontrer l'erreur suivante lors de la connexion au VPS : **WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!** (le message d'erreur sera différent sur Windows).
+Suite à la réinstallation de du VPS, l'erreur apparaît suivante lors de la connexion au VPS : **WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!** (le message d'erreur sera différent sous Windows).
 Dans ce cas, il convient de supprimer l'ancienne clé SSH.
 Sous Linux, la clé est généralement enregistré dans le fichier `/home/[user]/.ssh/known_hosts`
 Le terminal invite normalement à supprimer l'ancienne clé SSH en communiquant une ligne de commande similaire à celle-ci : `ssh-keygen -f "/home/user/.ssh/known_hosts" -R [192.168.x.x]:22`
