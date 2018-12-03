@@ -8,7 +8,7 @@
 * Installer LAMP sur Ubuntu
 * Installer phpMyAdmin
 * Faire pointer un nom de domaine vers le VPS
-* Créer un Virtual Host
+* Créer un VirtualHost (ou Hôte Virtuel)
 * Activer le HTTPS sur son site Internet avec Let's Encrypt
 * Annexes
 * Sources
