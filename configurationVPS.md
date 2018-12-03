@@ -10,6 +10,7 @@
 * Faire pointer un nom de domaine vers le VPS
 * Créer un VirtualHost (ou Hôte Virtuel)
 * Activer le HTTPS sur son site Internet avec Let's Encrypt
+* Téléverser des fichiers
 * Annexes
 * Sources
 
@@ -140,7 +141,7 @@ On obtient donc la configuration de base suivante pour le fichier 000-default.co
 
 ### Activer des modules complémentaires sur Apache
 
-Activer le module "rewrite" (permet de réécrire des URL) :
+Activation du module "rewrite" (permet de réécrire des URL) :
 * `a2enmod rewrite`
 
 Activation du module SSL.
@@ -151,7 +152,7 @@ Toujours relancer ensuite Apache2 :
 * `systemctl restart apache2`
 
 Activer le module PHP 7.2
-* `a2enmod php7.2` Si vous avez bien suivi les précédentes étapes, vous devriez normalement obtenir un message vous indiquant que le module est déjà activé.
+* `a2enmod php7.2` => Si vous avez bien suivi les précédentes étapes, vous devriez normalement obtenir un message vous indiquant que le module est déjà activé.
 
 N.B. Pour lister les modules d'Apache chargés : `apache2ctl -M`
 
@@ -160,7 +161,7 @@ N.B. Pour lister les modules d'Apache chargés : `apache2ctl -M`
 Commande à taper en tant que root : `chown -R nouveauUtilisateur:www-data /var/www/html`
 Cette étape permettra de donner les droits sur le dossier www/html au nouvel utilisateur (créé avec la commande `adduser`) et au groupe du serveur Apache (www-data).
 
-Cette étape est nécessaire afin de pouvoir par la suite téléverser des fichiers dans le dossier **www/html** en tant que `nouveauUtilisateur` (le user créé précedemment dans l'accès SSH) et non pas seulement avec `root` dont nous avons bloqué l'accès direct.
+Cette étape est nécessaire afin de pouvoir par la suite téléverser des fichiers dans le dossier **www/html** en tant que `nouveauUtilisateur` (le user créé précédemment pour l'accès SSH) et non pas seulement avec `root` dont nous avons bloqué l'accès direct.
 
 ## Installer phpMyAdmin
 
@@ -169,17 +170,17 @@ Cette étape est nécessaire afin de pouvoir par la suite téléverser des fichi
 Installer phpMyAdmin :
 * `apt install phpmyadmin`
 * Lors de l'installation, il vous sera posé quelques questions auxquelles il faut répondre :
-** Créer la base de données phpMyAdmin : **oui** (sauf si vous voulez procéder à cette configuration vous-même). 
-** Définir un mot de passe pour l'utilisateur MySQL phpmyadmin : Vous pouvez laisser le champ vide et valider **OK**. Cela aura pour effet de générer un mot de passe aléatoire. Etant donné que nous n'avons pas besoin de connaître le mot de passe de connexion pour l'utilisateur phpmyadmin, cela n'est pas gênant.
-** Choisir le serveur web à configurer automatiquement : Appuyer sur la touche Espace pour vérifier qu'une étoile est bien positionné entre les crochets associés à **apache2**, et valider **OK**. Sinon modifier la sélection pour **apache2** et valider **OK**.
+  * Créer la base de données phpMyAdmin : **oui** (sauf si l'on souhaite procéder soi-même à cette configuration). 
+  * Définir un mot de passe pour l'utilisateur MySQL phpmyadmin : laisser le champ vide et valider **OK**. Cela aura pour effet de générer un mot de passe aléatoire. Etant donné que nous n'avons pas besoin de connaître le mot de passe de connexion pour l'utilisateur phpmyadmin, cela n'est pas gênant.
+  * Choisir le serveur web à configurer automatiquement : Appuyer sur la touche Espace pour vérifier qu'une étoile est bien positionné entre les crochets associés à **apache2**, et valider **OK**. Sinon modifier la sélection pour **apache2** et valider **OK**.
 
 ### Accès root
 
 Avec MySQL depuis Bionic 18.04, et MariaDB depuis Xenial 16.04, l'authentification de l'utilisateur root de MySQL se fait au moyen du plugin auth_socket, donc avec sudo.
 Cette méthode ne permet pas de se connecter avec phpMyAdmin, mais il est vivement déconseillé de modifier ce comportement.
 
-Si vous avez besoin d'un accès global à vos bases de données depuis un même compte, la solution conseillée est donc de créer un nouvel utilisateur et de lui attribuer tous les privilèges :
-* `mysql` (avec des droits root)
+Si besoin d'un accès global aux bases de données depuis un même compte, la solution conseillée est donc de créer un nouvel utilisateur et de lui attribuer tous les privilèges :
+* `mysql` (avec les droits root)
 
 Puis dans la console MySQL :
 ```
@@ -190,10 +191,10 @@ QUIT;
 
 ## Faire pointer un nom de domaine vers le VPS
 
-La procédure exacte dffière selon les registrars, mais de manière générale il est conseillé :
-1. Laisser les paramètres DNS par défaut associé au nom de domaine par votre Registrar.
-2. Modifier l'enregistrement DNS de type **A** de votre domaine **example.com** pour y ajouter l'adresse IP du VPS. L’enregistrement DNS de type A permet de relier un nom d’hôte (domaine ou sous-domaine) à l’adresse IP d’un serveur.
-3. Si ce n'est pas déjà fait automatiquement par le Registrar, créer le sous-domaine www.example.com. Puis modifier l'enregistrement DNS de type **CNAME** de ce sous-domaine pour y ajouter la valeur **example.com**. L’enregistrement DNS de type CNAME vous permet de relier un nom d’hôte vers l’enregistrement DNS d’un autre nom d’hôte, sur le principe de l’alias.
+La procédure exacte diffère selon les registrars, mais de manière générale il est conseillé de :
+1. Ne pas modifier les paramètres DNS associé au nom de domaine enregistrés par défaut par le Registrar.
+2. Modifier l'enregistrement DNS de type **A** du domaine **example.com** pour y ajouter l'adresse IP du VPS. L’enregistrement DNS de type A permet de relier un nom d’hôte (domaine ou sous-domaine) à l’adresse IP d’un serveur.
+3. Si ce n'est pas déjà fait automatiquement par le Registrar, créer le sous-domaine www.example.com. Puis modifier l'enregistrement DNS de type **CNAME** de ce sous-domaine pour y ajouter la valeur **example.com**. L’enregistrement DNS de type CNAME permet de relier un nom d’hôte vers l’enregistrement DNS d’un autre nom d’hôte, sur le principe de l’alias.
 
 Pour vérifier la propagation des DNS : https://www.whatsmydns.net/ (généralement entre quelques minutes à 24h max).
 
@@ -202,9 +203,9 @@ Pour vérifier la propagation des DNS : https://www.whatsmydns.net/ (généralem
 **Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 Créer un fichier de configuration dans lequel est défini un hôte virtuel pour chaque site ou application web dans le répertoire **/etc/apache2/sites-available/** :
-`nano /etc/apache2/sites-available/example.com.conf`
+* `nano /etc/apache2/sites-available/example.com.conf`
 
-Copier dans le fichier créé les lignes suivantes :
+Copier dans le fichier créé les lignes suivantes (apporter les modifications nécessaires) :
 ```
 <VirtualHost *:80>
 	ServerName example.com
@@ -224,7 +225,7 @@ Copier dans le fichier créé les lignes suivantes :
 | ServerAlias www.example.com | L'hôte sera aussi appelé pour le sous-domaine www.example.com. On peut aussi utiliser *.example.com pour inclure tous les sous-domaines. |
 | ErrorLog /var/log/apache2/error.example.com.log **et** CustomLog /var/log/apache2/access.example.com.log combined | Il est pratique d'avoir des logs séparés pour chaque hôte virtuel, afin de ne pas mélanger toutes les informations. |
 
-Enregistrer puis fermer le fichier.
+* Enregistrer puis fermer le fichier.
 
 Il faut ensuite activer cette configuration avec la commande `a2ensite [nom du fichier]`, puis relancer le serveur Apache pour que la configuration soit prise en compte avec la commande `systemctl reload apache2`.
 
@@ -261,6 +262,18 @@ Nous obtenons donc un fichier de configuration complet du VH :
 </VirtualHost>
 ```
 
+### Téléverser des fichiers
+
+Installer FileZilla : `apt install filezilla` (avec les droits root)
+
+1. Exécuter Filezilla, puis aller dans le **Gestionnaire de Sites** => onglet situé juste en dessous du menu **Fichier**.
+2. Cliquer sur **Nouveau Site**.
+3. Rentrer les informations suivantes : `Hôte = adresse IP du VPS` ; `Port = numéro du port modifié` ; `Protocole = SFTP - SSH File Transfer Protocol` ; `Type d'authentification = Normale` ; `Identifiant = nouveauUtilisateur` (précédemment créé) ; `Mot de passe = MDP du nouveauUtilisateur`.
+4. Puis **Connexion**.
+5. Message d'avertissement lors de la première connexion => **Cocher Toujours faire confiance à cet hôte, ajouter cette clé au cache**.
+6. Il est maintenant possible de transmettre des fichiers vers ses différents VH enregistrés dans le dossier **/var/www/html** côté serveur.
+7. Pour se déconnecter => Menu **Serveur** et cliquer sur **Déconnexion Ctrl+D**.
+
 ## Activer le HTTPS sur son site Internet avec Let's Encrypt
 
 Let’s Encrypt est une autorité de certification gratuite, automatisée et ouverte.
@@ -276,7 +289,7 @@ Pour voir les modules chargés :
 * `apache2ctl -M`
 
 Si besoin, activer les modules :
-* `a2enmod rewrite`
+* `a2enmod rewrite` et/ou
 * `a2enmod ssl`
 * Puis, relancer le serveur Apache : `systemctl reload apache2`
 
@@ -294,17 +307,17 @@ apt-get install python-certbot-apache
 ### Générer des certificats Let's Encrypt
 
 Il existe plusieurs manières de générer des certificats Let's Encrypt.
-L'exécution de la commande `certbot --apache` permet d'obtenir un certificat et autorise Certbot à modifier automatiquement la configuration Apache configurer les certificats.
+L'exécution de la commande `certbot --apache` permet d'obtenir un certificat et autorise Certbot à modifier automatiquement la configuration Apache pour configurer les certificats.
 
-Une fois la commade `certbot --apache` lancée, suivre les différentes instructions à l'écran, et notamment :
+Une fois la commande `certbot --apache` lancée, suivre les différentes instructions à l'écran, et notamment :
 * Saisir une adresse e-mail valide.
 * Sélectionner les domaines et sous-domaines pour lesquels générer un certificat.
 * Choisir l'option accès HTTPS :
-	* [1] Easy - Permet l'accès à HTTP et HTTPS
-	* [2] Secure - Redirige toutes les réquêtes vers l'accès HTTPS sécurisé [à privilégier surtout si le site est nouvueau]
+	* [1] Easy - Permet l'accès à HTTP et HTTPS.
+	* [2] Secure - Redirige toutes les réquêtes vers l'accès HTTPS sécurisé (à privilégier, d'autant plus si le site est nouveau).
 * Les certificats générés sont stockés dans le dossier **/etc/letsencrypt/live/CERTNAME/**
 
-A ce niveau là, nous constatons que Certbot a procédé aux configurations suivantes (celles-ci peuvent varier suivant la configuration demandée) dans le dossier **/etc/apache2/sites-available/** :
+A ce niveau, nous constatons que Certbot a procédé aux configurations suivantes dans le dossier **/etc/apache2/sites-available/** (celles-ci peuvent varier suivant la configuration demandée) :
 * Edition du fichier VH example.com.conf en ajoutant à la fin du fichier les lignes suivantes pour forcer la redirection de tous les domaines et sous-domaines vers le HTTPS :
 ```
 RewriteCond %{SERVER_NAME} =example.com [OR]
@@ -360,19 +373,22 @@ SSLCertificateKeyFile /etc/letsencrypt/live/example.com/privkey.pem
 </VirtualHost>
 </IfModule>
 ```
-Ce dernier apparait déjà comme activé dans le dossier **/etc/apache2/sites-enabled/**.
+Ce dernier fichier apparait déjà comme activé dans le dossier **/etc/apache2/sites-enabled/**.
+Le port 443 correspond au HTTPS.
 
-Pour vérifier la bonne configuration du serveur SSL : https://www.ssllabs.com/ssltest/
+Pour vérifier la bonne configuration du serveur SSL avec le nom de domaine et ses sous-domaines : https://www.ssllabs.com/ssltest/
 
 ### Renouvellement des certificats
 
 Les certificats Let's Encrypt ont une validité de 90 jours.
 Pour renouveller les certificats, utiliser cette commande :
 * `certbot renew`
+
 Cette commande tente de renouveler tous les certificats précédemment obtenus expirant dans moins de 30 jours. 
 
 Il est possible d'automatiser le renouvellement automatique des certificats via le **crontab** (= table de planification).
-Cette fiche n'explique pas cette procédure.
+*Cette fiche n'explique pas cette procédure.*
+
 Il est alors possible de tester le renouvellement automatique des certificats avec la commande suivante :
 * ``certbot renew --dry-run``
 
@@ -381,16 +397,16 @@ Il est alors possible de tester le renouvellement automatique des certificats av
 Pour révoquer des certificats :
 * `certbot revoke --cert-path /etc/letsencrypt/live/CERTNAME/cert.pem`
 
-On peut également spécifier le motif de révocation dcertifu icat à l'aide de l'argument **--reason**. Les différents motifscomprennent **unspecified** (la valeur par défaut), ainsi que **keycompromise**, **affiliationchanged**, **superseded**, and **cessationofoperation** :
-`certbot revoke --cert-path /etc/letsencrypt/live/CERTNAME/cert.pem --reason keycompromise`
+On peut également spécifier le motif de révocation du certificat à l'aide de l'argument **--reason**. Les différents motifs comprennent **unspecified** (la valeur par défaut), ainsi que **keycompromise**, **affiliationchanged**, **superseded**, et **cessationofoperation** :
+* `certbot revoke --cert-path /etc/letsencrypt/live/CERTNAME/cert.pem --reason keycompromise`
 
 
-Une fois qu'un certificat est révoqué, tous les fichiers d'un certificat peuvent être supprimés du système à l'aide de la commande `delete` :
+Une fois qu'un certificat est révoqué, tous les fichiers associés peuvent être supprimés du système à l'aide de la commande `delete` :
 `certbot delete --cert-name example.com`
 
 Ensuite, penser à :
 1. Taper la commande `a2dissite example.com-le-ssl.conf`
-2. Dans */etc/apache2/sites-available*, supprimer le fichier de configuration associé : `rm example-le-ssl.conf`
+2. Dans **/etc/apache2/sites-available**, supprimer le fichier de configuration associé : `rm example-le-ssl.conf`
 3. Supprimer les lignes ajoutées par certbot dans le fichier de **config example.com.conf**. Par exemple à la fin du fichier example.com.conf :
 ```
 RewriteCond %{SERVER_NAME} =example.com [OR]
@@ -398,8 +414,7 @@ RewriteCond %{SERVER_NAME} =www.example.com
 RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 ```
 4. Relancer Apache : `systemctl restart apache2`
-5. Si aucune différence sur la navigateur, fermer le navigateur et supprimer le cache et les cookies.
-
+5. Si aucune différence dans le navigateur, fermer le navigateur et supprimer le cache et les cookies.
 
 ## Annexes
 
@@ -407,15 +422,15 @@ RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 
 Bien vérifier que phpMyAdmin est installé:
 
-Entrer la commande suivante : whereis phpmyadmin.
+Entrer la commande suivante : `whereis phpmyadmin`
 
 Si le terminal retourne :
 * `phpmyadmin: /etc/phpmyadmin /usr/share/phpmyadmin`
-c'est que phpMyAdmin est bien installé.
+=> c'est que phpMyAdmin est bien installé.
 
 Dans le cas contraire, s'assurer auparavant que, lors de l'installation du paquet phpmyadmin, le serveur web souhaité (généralement Apache) a bien été sélectionné.
 Taper la commande suivante pour reconfigurer phpmyadmin :
-* `dpkg-reconfigure phpmyadmin` (toujours avec les droits root)
+* `dpkg-reconfigure phpmyadmin` (toujours avec les droits root).
 L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut appuyer sur la barre d'espace et s'assurer d'avoir une astérisque * au niveau d'Apache.
 
 ## Erreur : phpMyAdmin affiche “Warning in ./libraries/sql.lib.php#613 count(): Parameter must be an array or an object that implements Countable”
@@ -439,7 +454,8 @@ L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut 
 
 ### Erreur : @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!  @
 
-Suite à la réinstallation de du VPS, l'erreur apparaît suivante lors de la connexion au VPS : **WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!** (le message d'erreur sera différent sous Windows).
+Suite à la réinstallation du VPS, l'erreur suivante apparaît lors de la connexion au VPS : **WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!** (le message d'erreur sera différent sous Windows).
+
 Dans ce cas, il convient de supprimer l'ancienne clé SSH.
 Sous Linux, la clé est généralement enregistré dans le fichier `/home/[user]/.ssh/known_hosts`
 Le terminal invite normalement à supprimer l'ancienne clé SSH en communiquant une ligne de commande similaire à celle-ci : `ssh-keygen -f "/home/user/.ssh/known_hosts" -R [192.168.x.x]:22`
