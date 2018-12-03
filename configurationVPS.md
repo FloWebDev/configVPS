@@ -9,7 +9,6 @@
 * Installer phpMyAdmin
 * Faire pointer un nom de domaine vers le VPS
 * Créer un Virtual Host
-* Redirecton 301 de http://www.example.com vers http://example.com
 * Activer le HTTPS sur son site Internet avec Let's Encrypt
 * Annexes
 * Sources
@@ -347,6 +346,8 @@ SSLCertificateKeyFile /etc/letsencrypt/live/example.com/privkey.pem
 ```
 Ce dernier apparait déjà comme activé dans le dossier **/etc/apache2/sites-enabled/**.
 
+Pour vérifier la bonne configuration du serveur SSL : https://www.ssllabs.com/ssltest/
+
 ### Renouvellement des certificats
 
 Les certificats Let's Encrypt ont une validité de 90 jours.
@@ -432,7 +433,17 @@ Pour supprimer une clé SSH sur Windows avec Putty :
 ** Sélectionner le certificat à supprimer,
 ** Cliquer avec le bouton droit, puis cliquer sur Supprimer.
 
+## Sources
 
+Débuter avec un VPS : https://docs.ovh.com/fr/vps/debuter-avec-vps/
+Sécuriser un VPS : https://docs.ovh.com/fr/vps/conseils-securisation-vps/
+Exemple d'installation complète depuis un environnement Gandi : https://github.com/O-clock-Alumni/fiches-recap/blob/master/serveur/installation-gandi.md
+How to solve the incompatibility problem between PhpMyAdmin and PHP7.2 : https://1netwiki.com/wiki/27
+Procédure de mise en place d'un domaine local : https://github.com/O-clock-Alumni/fiches-recap/blob/master/ldc/local_vhost.md
+Résoudre le duplicate content (avec et sans www) : https://www.webrankinfo.com/dossiers/techniques/redirection-301-www
+Let's Encrypt : https://letsencrypt.org/
+Certbot Apache on Ubuntu 18.04 LTS (bionic) : https://certbot.eff.org/lets-encrypt/ubuntubionic-apache
+User Guide Certbot : https://certbot.eff.org/docs/using.html
 
 
 
