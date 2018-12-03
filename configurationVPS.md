@@ -16,26 +16,26 @@
 ## Pré-requis
 
 * VPS chez OVH (l'installation et la configuration diffère peu selon les prestataires).
-* Installation de la distribution Ubuntu 18.04 Server (version 64 bits) sur son VPS.
+* Installation de la distribution Ubuntu 18.04 Server (version 64 bits) sur le VPS.
 
 ## Se connecter au VPS
 
 Lors de l’installation (ou de la réinstallation) du VPS, OVH envoie un e-mail avec un mot de passe **en clair** pour l’accès SSH en tant qu'utilisateur root.
 Le SSH est un protocole de communication sécurisé. L’accès se fait via un terminal de commande (Linux ou MAC) ou par l’intermédiaire d’un logiciel tiers sur Windows (Putty, par exemple).
 
-Voici la commande à taper pour se connecter à son VPS :
+Voici la commande à taper pour se connecter au VPS :
 * `ssh root@IPv4_de_votre_VPS` ou `ssh root@vpsXXXX.ovh.net`
 
 Si erreur **WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!** => Consulter l'annexe en bas de page.
 
 ## Sécuriser le VPS
 
-** Toutes les opératiosn qui suivent nécessitent d'ête fait en tant qu'utilisateur root **
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 ### Mettre à jour le système
 
 * La mise à jour de la liste des paquets : `apt-get update`
-* La mise à jour des paquets eux-mêmes : `apt-get upgrade` + éventuellement `apt-get full-upgrade` en cas de mises à jour restantes malgré la première commande. Cette dernière commande permet également de gérer la mise à jour des dépendances.
+* La mise à jour des paquets eux-mêmes : `apt-get upgrade` + éventuellement `apt-get full-upgrade` en cas de mises à jour restantes malgré la première commande. Cette dernière commande permet de gérer la mise à jour des dépendances.
 
 ### Modifier le port d’écoute par défaut du service SSH
 
@@ -44,21 +44,22 @@ Voici la commande à effectuer pour modifier le fichier de configuration du serv
 
 Il faut ensuite visualiser la ligne suivante (ou équivalente, faire une recherche du mot clé **port** avec `Ctrl + W`) :
 `# What ports, IPs and protocols we listen for Port 22`
+
 Décommenter la ligne en supprimant le `# ` et remplacer le nombre 22 (port par défaut de SSH) par le port de votre choix (par exemple 8787).
 Enregistrer la modification.
 
 Il faut ensuite redémarrer le service SSH : `/etc/init.d/ssh restart`
 
 À présent, lors des prochianes connexions SSH, il faudra obligatoirement renseigner le nouveau port :
-* `ssh root@votrevps.ovh.net -p NouveauPort` Ex : `ssh root@votrevps.ovh.net -p 4646`
+* `ssh root@votrevps.ovh.net -p NouveauPort` Ex : `ssh root@votrevps.ovh.net -p 8787`
 
 ### Modifier le mot de passe associé à l’utilisateur “root”
 
-ÀU mot de passe est créé automatiquement lors de l’installation d’une distribution pour l’accès principal (root). Il s'agit du mot de passe envoyé **en clair** par email.
-Il est fortement conseillé de le personnaliser en le modifiant en tapant la commande suivante :
+Le mot de passe est créé automatiquement lors de l’installation d’une distribution pour l’accès principal (root). Il s'agit du mot de passe envoyé **en clair** par email.
+Il est fortement conseillé de le modifier en tapant la commande suivante :
 * `passwd root`
 * Rentrer le nouveau mot de passe deux fois pour le valider.
-* Attention, **celui-ci ne s’affichera pas lors de l’écriture**, par mesure de sécurité. Vous ne pourrez donc pas voir les caractères saisis.
+* Attention, **celui-ci ne s’affichera pas lors de l’écriture**, par mesure de sécurité.
 * Effectif dès la prochaine connexion SSH.
 
 ### Créer un utilisateur avec des droits restreints et agir sur le système avec les droits root
@@ -68,7 +69,7 @@ Créer un nouvel utilisateur avec la commande suitvante :
 * Remplir ensuite les différentes informations demandées par le système (mot de passe, nom, etc).
 * Excepté pour le mot de passe, il est possible de valider tous les champs à blanc.
 
-Une fois connecté à votre système avec ce nouvel utulisateur, il faudra taper la commande suivante pour avoir les droits root :
+Une fois connecté au système avec ce nouvel utilisateur, il faudra taper la commande suivante pour avoir les droits root :
 * `su` ou `su root`
 
 ### Désactiver l’accès au serveur via l’utilisateur root
@@ -87,21 +88,21 @@ La procédure n'est pas indiquée dans cette fiche.
 
 LAMP = Linux - Apache - MySQL - PHP
 
-**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 Installer les paquets nécessaires pour Apache, PHP et MySQL :
 * `apt install apache2 php libapache2-mod-php mysql-server php-mysql`
 
+*N.B. Sans précision de version, c'est actuellement PHP 7.2 qui est installé par défaut.*
+
 La plupart des scripts PHP (CMS, forums, applications web en tout genre) utilisent des modules de PHP pour bénéficier de certaines fonctionnalités. Voici comment installer les modules les plus courants :
 * `apt install php-curl php-gd php-intl php-json php-mbstring php-xml php-zip`
 
-*N.B. Sans précision de version, c'est actuellement PHP 7.2 qui est installé par défaut.*
-
-Une fois les paquets installés, ouvrez un des liens suivants dans votre navigateur :
+Une fois les paquets installés, ouvrir un des liens suivants dans le navigateur :
 * http://127.0.0.1/
 * http://localhost
 
-Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It works!** s'affiche si votre serveur LAMP est correctement installé.
+Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It works!** s'affiche si le serveur LAMP est correctement installé.
 
 ### Configuration par défaut du serveur Apache
 
@@ -118,8 +119,8 @@ Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It wor
 | Directive | Description |
 | - | - |
 | Options +FollowSymLinks | Apache suivra les liens symboliques qu'il trouvera dans ce répertoire (et ses descendants). |
-| AllowOverride all | Apache suivra les liens symboliques qu'il trouvera dans ce répertoire (et ses descendants). |
-| Require all granted | OTous les visiteurs pourront accéder au contenu de ce répertoire. Pour des raisons de sécurité ou de privacité on peut par exemple limiter l'accès au serveur à seulement une ou certaines adresses IP avec une directive du type `Require ip 192.168.1.10.`  |
+| AllowOverride all | On pourra inclure une configuration personnalisée via un fichier .htaccess. |
+| Require all granted | Tous les visiteurs pourront accéder au contenu de ce répertoire. Pour des raisons de sécurité ou de privacité on peut par exemple limiter l'accès au serveur à seulement une ou certaines adresses IP avec une directive du type `Require ip 192.168.1.10.`  |
 
 
 On obtient donc la configuration de base suivante pour le fichier 000-default.conf :
@@ -142,7 +143,7 @@ On obtient donc la configuration de base suivante pour le fichier 000-default.co
 Activer le module "rewrite" (permet de réécrire des URL) :
 * `a2enmod rewrite`
 
-AActivation du module SSL.
+Activation du module SSL.
 Pour que le protocole TLS (successeur du SSL) puisse fonctionner avec Apache2, il faut activer le module ssl avec la commande :
 * `a2enmod ssl`
 
@@ -163,7 +164,7 @@ Cette étape est nécessaire afin de pouvoir par la suite téléverser des fichi
 
 ## Installer phpMyAdmin
 
-**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 Installer phpMyAdmin :
 * `apt install phpmyadmin`
@@ -198,7 +199,7 @@ Pour vérifier la propagation des DNS : https://www.whatsmydns.net/ (généralem
 
 ## Créer un VirtualHost (ou Hôte Virtuel)
 
-**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 Créer un fichier de configuration dans lequel est défini un hôte virtuel pour chaque site ou application web dans le répertoire **/etc/apache2/sites-available/** :
 `nano /etc/apache2/sites-available/example.com.conf`
@@ -265,7 +266,7 @@ Nous obtenons donc un fichier de configuration complet du VH :
 Let’s Encrypt est une autorité de certification gratuite, automatisée et ouverte.
 Pour la génération et la gestion des certificats, Let's Encrypt recommande l'utilisation du client ACME **Certbot**.
 
-**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 ### Pré-requis
 
@@ -419,7 +420,7 @@ L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut 
 
 ## Erreur : phpMyAdmin affiche “Warning in ./libraries/sql.lib.php#613 count(): Parameter must be an array or an object that implements Countable”
 
-**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 * Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/sql.lib.php /usr/share/phpmyadmin/libraries/sql.lib.php.bak`
 * Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/sql.lib.php`
@@ -428,7 +429,7 @@ L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut 
 
 ## Erreur : phpMyAdmin affiche “Warning in ./libraries/plugin_interface.lib.php#551”
 
-**Toutes les opérations qui suivent doivent être effectuées avec les droits root**
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
 
 * Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/plugin_interface.lib.php /usr/share/phpmyadmin/libraries/plugin_interface.lib.php.bak`
 * Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/plugin_interface.lib.php`
@@ -445,12 +446,12 @@ Le terminal invite normalement à supprimer l'ancienne clé SSH en communiquant 
 
 Pour supprimer une clé SSH sur Windows avec Putty :
 * Accéder à la base de registre : 
-** Cliquer avec le bouton droit sur Démarrer,
-** Sélectionner Exécuter,
-** Entrer `regedit` dans la zone Ouvrir :, puis sélectionnez OK.
+  * Cliquer avec le bouton droit sur Démarrer,
+  * Sélectionner Exécuter,
+  * Entrer `regedit` dans la zone *Ouvrir :*, puis sélectionnez *OK*.
 * Aller dans `HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\SshHostKeys`
-** Sélectionner le certificat à supprimer,
-** Cliquer avec le bouton droit, puis cliquer sur Supprimer.
+  * Sélectionner le certificat à supprimer,
+  * Cliquer avec le bouton droit, puis cliquer sur Supprimer.
 
 ## Sources
 
