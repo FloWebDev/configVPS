@@ -107,7 +107,7 @@ Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It wor
 
 ### Configuration par défaut du serveur Apache
 
-* Ouvrir et éditer le fichier de configuration par défaut du serveur Apache. Il s'agit du premier Virtual Host.
+Ouvrir et éditer le fichier de configuration par défaut du serveur Apache. Il s'agit du premier Virtual Host :
 * `nano /etc/apache2/sites-available/000-default.conf`
 * Après la ligne `DocumentRoot /var/www/html` sauter une ligne et ajouter :
 ```
@@ -124,7 +124,7 @@ Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It wor
 | Require all granted | Tous les visiteurs pourront accéder au contenu de ce répertoire. Pour des raisons de sécurité ou de privacité on peut par exemple limiter l'accès au serveur à seulement une ou certaines adresses IP avec une directive du type `Require ip 192.168.1.10.`  |
 
 
-On obtient donc la configuration de base suivante pour le fichier 000-default.conf :
+On obtient donc la configuration de base suivante pour le fichier **000-default.conf** :
 ```
 <VirtualHost *:80>
 	ServerAdmin webmaster@localhost
@@ -188,6 +188,8 @@ GRANT ALL ON *.* TO 'nom_utilisateur_choisi'@'localhost' IDENTIFIED BY 'mot_de_p
 FLUSH PRIVILEGES;
 QUIT;
 ```
+
+*N.B. Pour  lister les utilisateurs ainsi que leurs méthodes d'authentification : `SELECT user, host, plugin, authentication_string FROM mysql.user;`*
 
 ## Faire pointer un nom de domaine vers le VPS
 
@@ -472,11 +474,27 @@ Pour supprimer une clé SSH sur Windows avec Putty :
 ## Sources
 
 Débuter avec un VPS : https://docs.ovh.com/fr/vps/debuter-avec-vps/
+
 Sécuriser un VPS : https://docs.ovh.com/fr/vps/conseils-securisation-vps/
+
+Serveur web - LAMP : https://doc.ubuntu-fr.org/lamp
+
+Serveur HTTP Apache 2 : https://doc.ubuntu-fr.org/apache2
+
+MySQL : https://doc.ubuntu-fr.org/mysql
+
+phpMyAdmin : https://doc.ubuntu-fr.org/phpmyadmin
+
 Exemple d'installation complète depuis un environnement Gandi : https://github.com/O-clock-Alumni/fiches-recap/blob/master/serveur/installation-gandi.md
+
 How to solve the incompatibility problem between PhpMyAdmin and PHP7.2 : https://1netwiki.com/wiki/27
+
 Procédure de mise en place d'un domaine local : https://github.com/O-clock-Alumni/fiches-recap/blob/master/ldc/local_vhost.md
+
 Résoudre le duplicate content (avec et sans www) : https://www.webrankinfo.com/dossiers/techniques/redirection-301-www
+
 Let's Encrypt : https://letsencrypt.org/
+
 Certbot Apache on Ubuntu 18.04 LTS (bionic) : https://certbot.eff.org/lets-encrypt/ubuntubionic-apache
+
 User Guide Certbot : https://certbot.eff.org/docs/using.html
