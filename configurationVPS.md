@@ -9,8 +9,8 @@
 * Installer phpMyAdmin
 * Faire pointer un nom de domaine vers le VPS
 * Créer un VirtualHost (ou Hôte Virtuel)
+* Téléverser des fichiers sur son VPS
 * Activer le HTTPS sur son site Internet avec Let's Encrypt
-* Téléverser des fichiers
 * Annexes
 * Sources
 
@@ -262,7 +262,7 @@ Nous obtenons donc un fichier de configuration complet du VH :
 </VirtualHost>
 ```
 
-### Téléverser des fichiers
+### Téléverser des fichiers sur son VPS
 
 Installer FileZilla : `apt install filezilla` (avec les droits root)
 
