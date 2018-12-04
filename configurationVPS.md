@@ -192,7 +192,7 @@ QUIT;
 ## Faire pointer un nom de domaine vers le VPS
 
 La procédure exacte diffère selon les registrars, mais de manière générale il est conseillé de :
-1. Ne pas modifier les paramètres DNS associé au nom de domaine enregistrés par défaut par le Registrar.
+1. Ne pas modifier les paramètres DNS associé au nom de domaine enregistrés par défaut par le registrar.
 2. Modifier l'enregistrement DNS de type **A** du domaine **example.com** pour y ajouter l'adresse IP du VPS. L’enregistrement DNS de type A permet de relier un nom d’hôte (domaine ou sous-domaine) à l’adresse IP d’un serveur.
 3. Si ce n'est pas déjà fait automatiquement par le Registrar, créer le sous-domaine www.example.com. Puis modifier l'enregistrement DNS de type **CNAME** de ce sous-domaine pour y ajouter la valeur **example.com**. L’enregistrement DNS de type CNAME permet de relier un nom d’hôte vers l’enregistrement DNS d’un autre nom d’hôte, sur le principe de l’alias.
 
