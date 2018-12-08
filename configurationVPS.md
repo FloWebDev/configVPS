@@ -206,7 +206,7 @@ Pour vérifier le bon fonctionnement de Fail2ban nous pouvons essayer de nous id
 
 Si Fail2ban fonctionne, nous devrions être interdits d'accès au serveur au bout d'un certain nombre d'essais (précisés dans la configuration à la ligne maxretry) ; à condition de ne pas avoir mis notre IP dans la directive ignoreip.
 
-**IMPORTANT !** Penser à régler la valeur de bantime sur un temps assez court (le temps des tests) afin de pouvoir nous reconnecter rapidement au serveur.
+**IMPORTANT !** Penser à régler la valeur de **bantime** sur un temps assez court (le temps des tests) afin de pouvoir se reconnecter rapidement au serveur.
 
 ### Configurer le pare-feu interne : Iptables
 
