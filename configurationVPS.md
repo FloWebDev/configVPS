@@ -183,7 +183,7 @@ failregex = ^<HOST> -.*"(GET|POST).*
 ignoreregex =
 ```
 
-IMPORTANT ! Il faut ensuite relancer la configuration : 
+**IMPORTANT !** Il faut ensuite relancer la configuration : 
 * `systemctl restart fail2ban`
 
 #### Commandes utiles à connaître
