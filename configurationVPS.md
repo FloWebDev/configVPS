@@ -81,9 +81,140 @@ Pour effectuer cette opération, il faut modifier le fichier de configuration SS
 * Repérer la ligne `PermitRootLogin yes` et rempalcer la valeur **yes** par **no**.
 * Redémarrer le service SSH : `/etc/init.d/ssh restart`
 
-### Installer et configurer un pare-feu
+### Installer et configurer le paquet Fail2ban
 
-La procédure n'est pas indiquée dans cette fiche.
+**Toutes les opérations qui suivent doivent être effectuées avec les droits root.**
+
+Fail2ban est un framework de prévention contre les intrusions dont le but est de bloquer les adresses IP inconnues qui tentent de pénétrer dans notre système ; afin de prémunir contre toute tentative de brute force sur nos services.
+
+#### Installation du paquet :
+* `apt-get install fail2ban`
+
+#### Paramétrage par défaut
+Les paramètres par défaut sont visibles dans le fichier **/etc/fail2ban/jail.conf**
+
+Nous ne devons pas modifier directement ce fichier car celui-ci est susceptible d'être modifié/écrasé lors d'une mise à jour du paquet.
+
+Il faut créer un fichier de configuration dans /etc/fail2ban/jail.d/custom.conf (ou un autre nom de son choix).
+
+Voici une proposition de paramètrage par défaut :
+```
+[DEFAULT]
+ignoreip = 127.0.0.1/8 124.32.5.48
+bantime = 600
+findtime = 3600
+maxretry = 3
+# mta = sendmail
+# destemail = root@localhost
+# sender = Fail2Ban_Server01
+action = %(action_)s
+# action = %(action_)s (bannissement par ajout d'une règle iptables)
+# action = %(action_mw)s (pour active l'envoi de courriels)
+# action = %(action_mwl)s (pour envoyer un mail avec le whois ainsi que les logs)
+```
+Le signe **#** indique un commentaire qui ne sera pas pris en compte au niveau des directives du fichier (sans incidence).
+
+| Directive | Description |
+| - | - |
+| ignoreip | Les IP devant être ignorées. On ajoute celle d'Apache, ainsi que notre propre IP pour ne pas être bloqué (ici 124.32.5.48). |
+| bantime | Durée de bannissement d'une IP avec une valeur en secondes. La valeur par défaut de 600 s (10 minutes) est beaucoup trop faible. Il est plus réaliste d'avoir des durées de bannissement d'une ou plusieurs heures, voire plusieurs jours. |
+| findtime | Définit en secondes le temps depuis lequel une anomalie est recherchée dans les logs. Il ne faut pas mettre une valeur trop élevée (1 heure suffit) sans quoi la quantité de logs à analyser pourrait devenir très importante et donc avoir un impact sur les performances. |
+| maxretry | une IP sera bannie après x tentatives de connexion avortées. |
+| action | Actions exécutées par fail2ban lorsqu'une correspondance est trouvée entre un filtre et une entrée de log. |
+
+Mon IP : https://mon-ip.net/
+
+*Il est possible de recevoir un courriel après chaque bannissement d'une adresse IP. Pour cela, faut que le système soit correctement configuré pour l'envoi de courriels, par exemple avec ssmtp.*
+
+#### Configurer fail2ban pour les services actifs
+
+Pour spécifier à fail2ban quels services il doit surveiller, il faut activer les « jails » (prisons) correspondant.
+
+Si besoin de spécifier un port (par exemple, quand SSH n'est pas en écoute sur un port standard), un fichier de log particulier, ou un nombre de tentatives différent de la valeur par défaut, il faut le préciser à ce moment là.
+
+Voici une proposition de configuration à placer dans le fichier  **/etc/fail2ban/jail.d/custom.conf** :
+
+```
+[sshd]
+enabled = true
+# mode = normal (default), ddos, extra or aggressive (combines all).
+port = 8787 (dans notre cas)
+# port = ssh (si le port ssh par défaut n'a pas été modifié)
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+
+[apache-auth]
+enabled = true
+port = http,https
+logpath = /var/log/apache*/*error*.log
+
+[apache-noscript]
+enabled = true
+port = http,https
+logpath = /var/log/apache*/*error*.log
+
+[apache-overflows]
+enabled = true
+port = http,https
+logpath = /var/log/apache*/*error*.log
+
+[apache-badbots]
+enabled = true
+port = http,https
+logpath = /var/log/apache*/*error*.log
+
+[apache-dos]
+enabled = true
+# filter = apache-dos
+port = http,https
+logpath = /var/log/apache*/*access*.log
+bantime = 600
+maxretry = 3
+findtime = 300
+# on précise un bantime, maxretry et findtime spécifiques à ce filtre.
+```
+
+Nous créons ensuite le filtre pour la jail **[apache-dos]** qui n'existe pas par défaut :
+* `nano /etc/fail2ban/filters.d/apache-dos.conf`
+* Placer les lignes ci-dessous, enregistrer le fichier et quitter :
+```
+[Definition] 
+failregex = ^<HOST> -.*"(GET|POST).*
+ignoreregex =
+```
+
+IMPORTANT ! Il faut ensuite relancer la configuration : 
+* `systemctl restart fail2ban`
+
+#### Commandes utiles à connaître
+
+Pour vérifier que les prisons (jails) ont correctement été lancées :
+* `fail2ban-client status`
+
+Les prisons peuvent être contrôlées séparément avec les mots clés **start**, **stop**, **status** :
+* `fail2ban-client status JAILNAME`
+
+examiner les logs de fail2ban pour voir les actions effectuées :
+* `tail -f /var/log/fail2ban.log` [Ctrl + C pour arrêter le tail]
+
+Dé-bannir une adresse IP avec Fail2ban :
+* `fail2ban-client set JAILNAME unbanip IPADDRESS`
+
+#### Vérifier le bon fonctionnement de la configuration Fail2Ban
+
+Pour vérifier le bon fonctionnement de Fail2ban nous pouvons essayer de nous identifier plusieurs fois en saisissant un mauvais mot de passe.
+
+Si Fail2ban fonctionne, nous devrions être interdits d'accès au serveur au bout d'un certain nombre d'essais (précisés dans la configuration à la ligne maxretry) ; à condition de ne pas avoir mis notre IP dans la directive ignoreip.
+
+**IMPORTANT !** Penser à régler la valeur de bantime sur un temps assez court (le temps des tests) afin de pouvoir nous reconnecter rapidement au serveur.
+
+### Configurer le pare-feu interne : Iptables
+
+La distribution nue dispose d’un service de pare-feu nommé Iptables. Par défaut, ce service ne possède aucune règle active.
+
+Nous pouvons le constater en tapant la commande suivante : `iptables -L`
+
+Il est alors recommandé de créer et d’ajuster l'tilisation des règles sur ce pare-feu. Pour toute information sur les différentes manipulations possibles, il suffit de se référer au fonctionnement de ce service sur la documentation officielle de la distribution utilisée. Pour Ubuntu : https://doc.ubuntu-fr.org/iptables
 
 ## Installer LAMP sur Ubuntu
 
@@ -476,6 +607,12 @@ Pour supprimer une clé SSH sur Windows avec Putty :
 Débuter avec un VPS : https://docs.ovh.com/fr/vps/debuter-avec-vps/
 
 Sécuriser un VPS : https://docs.ovh.com/fr/vps/conseils-securisation-vps/
+
+Bannir des IP avec fail2ban : https://doc.ubuntu-fr.org/fail2ban
+
+Protéger votre VPS/Apache avec Fail2Ban : https://www.supinfo.com/articles/single/2660-proteger-votre-vps-apache-avec-fail2ban
+
+How To: Stop Apache DOS attacks with Fail2Ban : https://r3dux.org/2013/06/how-to-stop-apache-dos-attacks-with-fail2ban/
 
 Serveur web - LAMP : https://doc.ubuntu-fr.org/lamp
 
