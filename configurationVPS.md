@@ -169,7 +169,7 @@ enabled = true
 port = http,https
 logpath = /var/log/apache*/*access*.log
 bantime = 600
-maxretry = 3
+maxretry = 300
 findtime = 300
 # on précise un bantime, maxretry et findtime spécifiques à ce filtre.
 ```
