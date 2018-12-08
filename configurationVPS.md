@@ -95,7 +95,7 @@ Les paramètres par défaut sont visibles dans le fichier **/etc/fail2ban/jail.c
 
 Nous ne devons pas modifier directement ce fichier car celui-ci est susceptible d'être modifié/écrasé lors d'une mise à jour du paquet.
 
-Il faut créer un fichier de configuration dans /etc/fail2ban/jail.d/custom.conf (ou un autre nom de son choix).
+Il faut créer un fichier de configuration dans **/etc/fail2ban/jail.d/custom.conf** (ou un autre nom de son choix).
 
 Voici une proposition de paramètrage par défaut :
 ```
