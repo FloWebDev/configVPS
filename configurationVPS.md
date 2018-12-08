@@ -109,7 +109,7 @@ maxretry = 3
 # sender = Fail2Ban_Server01
 action = %(action_)s
 # action = %(action_)s (bannissement par ajout d'une règle iptables)
-# action = %(action_mw)s (pour active l'envoi de courriels)
+# action = %(action_mw)s (pour activer l'envoi de courriels)
 # action = %(action_mwl)s (pour envoyer un mail avec le whois ainsi que les logs)
 ```
 Le signe **#** indique un commentaire qui ne sera pas pris en compte au niveau des directives du fichier (sans incidence).
