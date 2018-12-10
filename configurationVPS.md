@@ -327,11 +327,7 @@ Installer les paquets nécessaires pour Apache, PHP et MySQL :
 La plupart des scripts PHP (CMS, forums, applications web en tout genre) utilisent des modules de PHP pour bénéficier de certaines fonctionnalités. Voici comment installer les modules les plus courants :
 * `apt install php-curl php-gd php-intl php-json php-mbstring php-xml php-zip`
 
-Une fois les paquets installés, ouvrir un des liens suivants dans le navigateur :
-* http://127.0.0.1/
-* http://localhost
-
-Une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It works!** s'affiche si le serveur LAMP est correctement installé.
+Une fois les paquets installés, entrer l'adresse IP du VPS dans le navigateur => une page ayant pour titre **Apache2 Ubuntu Default Page** et sous-titre **It works!** s'affiche si le serveur LAMP est correctement installé.
 
 ### Configuration par défaut du serveur Apache
 
@@ -710,6 +706,10 @@ Bannir des IP avec fail2ban : https://doc.ubuntu-fr.org/fail2ban
 Protéger votre VPS/Apache avec Fail2Ban : https://www.supinfo.com/articles/single/2660-proteger-votre-vps-apache-avec-fail2ban
 
 How To: Stop Apache DOS attacks with Fail2Ban : https://r3dux.org/2013/06/how-to-stop-apache-dos-attacks-with-fail2ban/
+
+Iptables : https://www.grafikart.fr/tutoriels/iptables-694
+
+Iptables Firewall : http://wiki.kartbuilding.net/index.php/Iptables_Firewall
 
 Serveur web - LAMP : https://doc.ubuntu-fr.org/lamp
 
