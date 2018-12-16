@@ -604,6 +604,9 @@ Le port 443 correspond au HTTPS.
 
 Pour vérifier la bonne configuration du serveur SSL avec le nom de domaine et ses sous-domaines : https://www.ssllabs.com/ssltest/
 
+Pour afficher une liste des certificats - et visualiser notamment les dates d'expiration -, utiliser la commande suivante :
+* `certbot certificates`
+
 ### Renouvellement des certificats
 
 Les certificats Let's Encrypt ont une validité de 90 jours.
