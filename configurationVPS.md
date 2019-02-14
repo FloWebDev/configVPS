@@ -677,7 +677,7 @@ L'option Apache peut sembler sélectionnée alors qu'elle ne l'est pas. Il faut 
 
 * Effectuer une copie du fichier concerné : `cp /usr/share/phpmyadmin/libraries/plugin_interface.lib.php /usr/share/phpmyadmin/libraries/plugin_interface.lib.php.bak`
 * Editer le fichier avec les droits root : `nano /usr/share/phpmyadmin/libraries/plugin_interface.lib.php`
-* Rechercher la ligne `if (! is_null($options) && count($options) > 0) {` ou `if ($options != null && count($options) > 0) {` et la remplacer par `if (!empty($options)) {`
+* Rechercher la ligne `if (! is_null($options) && count($options) > 0) {` ou `if ($options != null && count($options) > 0) {` et la remplacer par `if ($options != null && count((array)$options) > 0) {`
 * Enregistrer et quitter
 
 
