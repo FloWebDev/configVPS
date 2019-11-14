@@ -615,10 +615,9 @@ Pour renouveller les certificats, utiliser cette commande :
 
 Cette commande tente de renouveler tous les certificats précédemment obtenus expirant dans moins de 30 jours. 
 
-Il est possible d'automatiser le renouvellement automatique des certificats via le **crontab** (= table de planification).
-*Cette fiche n'explique pas cette procédure.*
+Le package Certbot apporte une tâche cron qui renouvellera automatiquement les certificats avant leur expiration. Plus besoin d'exécuter à nouveau Certbot (sauf en cas de modification de sa configuration).
 
-Il est alors possible de tester le renouvellement automatique des certificats avec la commande suivante :
+Il est possible de tester le renouvellement automatique des certificats avec la commande suivante :
 * ``certbot renew --dry-run``
 
 ### Révocation et suppression des certificats
